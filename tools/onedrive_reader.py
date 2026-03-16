@@ -35,9 +35,10 @@ class OnedriveReader(Tool):
     async def execute(self, arguments: dict) -> dict:
         """The main function that performs the work of the tool and returns a file_path and content."""
         file_path = arguments["file_path"]
+        path = f"/me/drive/root:/{file_path}:/content"
         if file_path is None:
-            raise KeyError("file_path is not present in the dictionary.")
-        content = await self.graph_client.get_file_content(file_path=file_path)
+            raise RuntimeError(f"{file_path} has a value of 'None'.")
+        content = await self.graph_client.get(path)
         output = {
             "file_path" : file_path,
             "content" : content

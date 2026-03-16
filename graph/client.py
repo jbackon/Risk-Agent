@@ -46,11 +46,11 @@ class GraphClient:
         self.base_url = base_url
         self.strategy = strategy
 
-    async def get_file_content(self, file_path: str) -> str:
+    async def get(self, path: str) -> str:
         headers = {
             "authorization" : f"Bearer {self.strategy.get_token()}"
         }
-        url = f"{self.base_url}/me/drive/root:/{file_path}:/content"
+        url = f"{self.base_url}{path}"
         async with httpx.AsyncClient(follow_redirects=True) as client:
             r = await client.get(url=url, headers=headers)
             r.raise_for_status()
