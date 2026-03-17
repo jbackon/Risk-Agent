@@ -1,9 +1,5 @@
 """
 Abstract base class for all broker tools.
-
-Every tool the broker can dispatch to must implement this interface.
-The LLM never calls tools directly — it returns a tool name and arguments,
-and the broker uses this interface to validate and execute the call.
 """
 
 from abc import ABC, abstractmethod

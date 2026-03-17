@@ -32,10 +32,11 @@ class OnedriveReader(Tool):
             "required": ["file_path"]
         }
     
+    ## I need to to extract file_id from the file in Onedrive/Sharepoint for this code to work as written
     async def execute(self, arguments: dict) -> dict:
         """The main function that performs the work of the tool and returns a file_path and content."""
         file_path = arguments["file_path"]
-        path = f"/me/drive/root:/{file_path}:/content"
+        path = f"/users/jbackon@babson.edu/drive/items/{file_path}/content"
         if file_path is None:
             raise RuntimeError(f"{file_path} has a value of 'None'.")
         content = await self.graph_client.get(path)

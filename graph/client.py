@@ -24,7 +24,7 @@ class GraphAuth(AuthenticationStrategy):
         tenant_id = os.getenv("GRAPH_TENANT_ID")
 
         GRAPH_AUTHORITY = os.getenv("GRAPH_AUTHORITY")
-        authority = f"{GRAPH_AUTHORITY}/{tenant_id}"
+        authority = f"{GRAPH_AUTHORITY}{tenant_id}"
         scope = [os.getenv("GRAPH_SCOPE")]
 
         app = ConfidentialClientApplication(
