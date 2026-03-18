@@ -1,6 +1,6 @@
 """A HTTP layer that wraps all Microsoft Graph API calls."""
 
-import os, httpx
+import os, httpx, json
 from dotenv import load_dotenv
 from pathlib import Path
 from abc import ABC, abstractmethod
@@ -44,15 +44,29 @@ class GraphAuth(AuthenticationStrategy):
 class GraphClient:
     def __init__(self, base_url: str, strategy: AuthenticationStrategy) -> None:
         self.base_url = base_url
-        self.strategy = strategy
+        self.headers = {
+            "authorization": f"Bearer {strategy.get_token()}"
+        }
+
+    async def file_id(self, upn:str, file_name: str) -> str:
+        url = f"{self.base_url}/users/{upn}/drive/root/children"
+        async with httpx.AsyncClient(follow_redirects=True) as client:
+            r = await client.get(url=url, headers=self.headers)
+            r.raise_for_status()
+            response = r.json()
+            
+            for value in response.get("value", []):
+                if value.get("name") == file_name:
+                    return value.get("id")
+            
+            raise RuntimeError(f"The file name provided was not found in {upn}'s Onedrive." 
+                               f"Status code: {r.status_code}"
+                               )
 
     async def get(self, path: str) -> str:
-        headers = {
-            "authorization" : f"Bearer {self.strategy.get_token()}"
-        }
         url = f"{self.base_url}{path}"
         async with httpx.AsyncClient(follow_redirects=True) as client:
-            r = await client.get(url=url, headers=headers)
+            r = await client.get(url=url, headers=self.headers)
             r.raise_for_status()
             if r.text == "":
                 raise RuntimeError(f"The API call returned no data. {r.status_code}")

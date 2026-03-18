@@ -4,13 +4,15 @@ from tools.onedrive_reader import OnedriveReader
 from graph.client import GraphAuth, GraphClient
 from dotenv import load_dotenv
 
-def get_file_path() -> str:
+def get_file_path() -> list:
     parser = argparse.ArgumentParser()
-    parser.add_argument("file_path", help="The path of the file to be downloaded.", type=str)
+    parser.add_argument("file_name", help="The name of the file to be downloaded.", type=str)
+    parser.add_argument("upn", help="The user principal name of the user's Onedrive account.", type=str)
     args = parser.parse_args()
-    return args.file_path
+    inputs = [args.file_name, args.upn]
+    return inputs
 
-async def main(file_path: str) -> dict:
+async def main(inputs: list) -> dict:
     BASE_URL = os.getenv("BASE_URL")
     if BASE_URL is None:
         raise RuntimeError("The BASE_URL environment variable has not been set.")
@@ -19,14 +21,15 @@ async def main(file_path: str) -> dict:
     tool = OnedriveReader(graph_client=graph_client)
     broker.register_tool(name=tool.name, tool=tool)
     arguments = {
-        "file_path": file_path
+        "file_name": inputs[0],
+        "upn": inputs[1]
     }
     file_content = await broker.dispatch(name="onedrive_reader", arguments=arguments)
     return file_content
 
 if __name__ == "__main__":
     load_dotenv()
-    file_content = asyncio.run(main(file_path=get_file_path()))
+    file_content = asyncio.run(main(inputs=get_file_path()))
     print(file_content)
 
 

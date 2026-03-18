@@ -35,13 +35,17 @@ class OnedriveReader(Tool):
     ## I need to to extract file_id from the file in Onedrive/Sharepoint for this code to work as written
     async def execute(self, arguments: dict) -> dict:
         """The main function that performs the work of the tool and returns a file_path and content."""
-        file_path = arguments["file_path"]
-        path = f"/users/jbackon@babson.edu/drive/items/{file_path}/content"
-        if file_path is None:
-            raise RuntimeError(f"{file_path} has a value of 'None'.")
-        content = await self.graph_client.get(path)
+        file_name = arguments["file_name"]
+        upn = arguments["upn"]
+        if file_name is None:
+            raise RuntimeError(f"'file_name' has a value of 'None'.")
+        elif upn is None:
+            raise RuntimeError(f"'upn' has a value of 'None'.")
+        id = await self.graph_client.file_id(upn, file_name)
+        content_path = f"/users/{upn}/drive/items/{id}/content"
+        content = await self.graph_client.get(content_path)
         output = {
-            "file_path" : file_path,
+            "file_path" : file_name,
             "content" : content
         }
         return output
