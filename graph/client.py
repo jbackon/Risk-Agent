@@ -11,12 +11,14 @@ env_path = Path(BASE_DIR / ".env")
 load_dotenv(dotenv_path=env_path)
 
 class AuthenticationStrategy(ABC):
+    """Defines requirements for any class that performs authentication to MS Graph."""
     @abstractmethod
     def get_token(self) -> str:
         """A function for getting an API token"""
         pass
 
 class GraphAuth(AuthenticationStrategy):
+    """Performs authentication services to MS Graph."""
     def get_token(self) -> str:
         """A function for getting a token for the MS Graph API"""
         client_id = os.getenv("GRAPH_CLIENT_ID")
@@ -42,6 +44,7 @@ class GraphAuth(AuthenticationStrategy):
             return access_token
 
 class GraphClient:
+    """The HTTP client that performs the MS Graph API calls."""
     def __init__(self, base_url: str, strategy: AuthenticationStrategy) -> None:
         self.base_url = base_url
         self.headers = {
@@ -49,6 +52,7 @@ class GraphClient:
         }
 
     async def file_id(self, upn:str, file_name: str) -> str:
+        """Returns the SharePoint/OneDrive file ID for the given file_name."""
         url = f"{self.base_url}/users/{upn}/drive/root/children"
         async with httpx.AsyncClient(follow_redirects=True) as client:
             r = await client.get(url=url, headers=self.headers)
@@ -63,13 +67,14 @@ class GraphClient:
                                f"Status code: {r.status_code}"
                                )
 
-    async def get(self, path: str) -> str:
+    async def get(self, path: str) -> bytes:
+        """Performs an HTTP GET request to an API endpoint defined by 'path'."""
         url = f"{self.base_url}{path}"
         async with httpx.AsyncClient(follow_redirects=True) as client:
             r = await client.get(url=url, headers=self.headers)
             r.raise_for_status()
-            if r.text == "":
+            if r.content == "":
                 raise RuntimeError(f"The API call returned no data. {r.status_code}")
             else:    
-                data = r.text
+                data = r.content
                 return data

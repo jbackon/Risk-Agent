@@ -1,22 +1,23 @@
-"""The class that defines the tool for reading the contents of a OneDrive file 
+"""Defines the tool for reading the contents of an Excel file in OneDrive 
     and returns the contents as a text string."""
 
+import openpyxl, io
 from .base import Tool
 from graph.client import GraphClient
 
-class OnedriveReader(Tool):
+class OnedriveXlsxReader(Tool):
     def __init__(self, graph_client : GraphClient) -> None:
         self.graph_client = graph_client
 
     @property
     def name(self) -> str:
         """The tool's unique identifier."""
-        return "onedrive_reader"
+        return "onedrive_xlsx_reader"
 
     @property 
     def description(self) -> str:
         """A description of what the tool does."""
-        return "Retrieves the text content of a file stored in OneDrive given its path, and returns the file path and content."
+        return "Retrieves the content of an Excel file stored in OneDrive given its name, and returns the file name and content."
     
     @property
     def parameters(self) -> dict:
@@ -24,17 +25,16 @@ class OnedriveReader(Tool):
         return {
             "type": "object",
             "properties": {
-                "file_path": {
+                "file_name": {
                     "type": "string",
-                    "description": "The path to the file in OneDrive."
+                    "description": "The name of the file in OneDrive."
                 }
             },
-            "required": ["file_path"]
+            "required": ["file_name"]
         }
     
-    ## I need to to extract file_id from the file in Onedrive/Sharepoint for this code to work as written
     async def execute(self, arguments: dict) -> dict:
-        """The main function that performs the work of the tool and returns a file_path and content."""
+        """The main function that performs the work of the tool and returns a file_name and content."""
         file_name = arguments["file_name"]
         upn = arguments["upn"]
         if file_name is None:
@@ -44,8 +44,19 @@ class OnedriveReader(Tool):
         id = await self.graph_client.file_id(upn, file_name)
         content_path = f"/users/{upn}/drive/items/{id}/content"
         content = await self.graph_client.get(content_path)
+        
+        excel_data = io.BytesIO(content)
+        workbook = openpyxl.load_workbook(excel_data)
+       
+        for sheet_name in workbook.sheetnames:
+            sheet = workbook[sheet_name]
+            print(f"\n--- Sheet: {sheet_name} ---")
+
+            for row in sheet.iter_rows(values_only=True):
+                print(row)
+
         output = {
             "file_path" : file_name,
-            "content" : content
+            "content" : "test"
         }
         return output
