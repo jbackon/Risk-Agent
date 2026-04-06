@@ -1,0 +1,24 @@
+{
+        "vendor_name": "Name",
+        "solution_name": "Solution",
+        "date": "Date",
+        "version": "version",
+        "sheets": [
+            {
+            "name": "Sheet 1",
+            "sections": [
+                {
+                    "name": "name",
+                    "questions": [
+                        {
+                            "id": "id1",
+                            "text": "text",
+                            "answer": "answer",
+                            "additional_info": "additional info"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

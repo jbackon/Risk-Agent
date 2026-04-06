@@ -4,6 +4,8 @@
 import openpyxl, io
 from .base import Tool
 from graph.client import GraphClient
+from extractors.hecvat_extractor import convert_questions_from_rows, convert_sections_from_questions, get_full_document
+from data_models.hecvat_model import HecvatSheet, HecvatFullDocument
 
 class OnedriveXlsxReader(Tool):
     def __init__(self, graph_client : GraphClient) -> None:
@@ -46,17 +48,17 @@ class OnedriveXlsxReader(Tool):
         content = await self.graph_client.get(content_path)
         
         excel_data = io.BytesIO(content)
-        workbook = openpyxl.load_workbook(excel_data)
-       
+        workbook = openpyxl.load_workbook(excel_data, data_only=True)
+
+        sheets = []
         for sheet_name in workbook.sheetnames:
             sheet = workbook[sheet_name]
-            print(f"\n--- Sheet: {sheet_name} ---")
-
-            for row in sheet.iter_rows(values_only=True):
-                print(row)
-
-        output = {
-            "file_path" : file_name,
-            "content" : "test"
-        }
-        return output
+            if sheet_name == "Institution Evaluation":
+                break
+            questions = convert_questions_from_rows(sheet)
+            sections = convert_sections_from_questions(questions)
+            sheets.append(HecvatSheet(name=sheet_name, sections=sections))
+        
+        full_document = get_full_document(sheet=workbook["START HERE"], sheets=sheets)
+        
+        return full_document.model_dump(mode="json")

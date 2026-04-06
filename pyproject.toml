@@ -7,4 +7,4 @@ name = "risk_agent"
 version = "0.1.0"
 
 [tool.setuptools]
-py-modules = ["broker", "tools", "graph"]
+py-modules = ["broker", "tools", "graph", "extractors", "data_models"]
