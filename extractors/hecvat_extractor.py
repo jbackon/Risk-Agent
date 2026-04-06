@@ -1,9 +1,13 @@
+"""A set of functions to extract relevant data from the raw bytes of a hecvat and convert them to the 
+data structures defined in hecvat_model."""
+
 import re
 from itertools import groupby
 from pydantic import ValidationError
 from data_models.hecvat_model import HecvatQuestion, HecvatSection, HecvatSheet, HecvatFullDocument
 
 def is_row_question(row: tuple) -> bool:
+    """Determines if a given row in the spreadsheet is a question that needs to be cataloged."""
     pattern = re.compile(r'^[A-Z]+-\d+$')
     if row[0] is None or type(row[0]) is int:
         return False
@@ -13,6 +17,7 @@ def is_row_question(row: tuple) -> bool:
         return bool(row[0] and pattern.match(str(row[0])))
 
 def convert_questions_from_rows(sheet) -> list:
+    """Creates a list of all of the questions in a given hecvat sheet."""
     questions = []
     for row in sheet.iter_rows(values_only=True):
         try:
@@ -27,6 +32,7 @@ def convert_questions_from_rows(sheet) -> list:
     return questions
 
 def convert_sections_from_questions(questions: list) -> list[HecvatSection]:
+    """Groups all of the questions from the same section together and return the list of sections with their names."""
     section = []
     prefix = lambda question: question.id[:4]
     try:
@@ -37,6 +43,7 @@ def convert_sections_from_questions(questions: list) -> list[HecvatSection]:
     return section
 
 def get_full_document(sheet, sheets: list[HecvatSheet]) -> HecvatFullDocument:
+    "Returns the full hecvat with relevant document metadata."
     date = None
     vendor_name = None
     solution_name = None

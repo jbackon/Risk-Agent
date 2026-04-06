@@ -1,14 +1,18 @@
+"""Defines the pydantic data models used to build the hecvat_data_structure using the hecvat_extractor."""
+
 import datetime
 from pydantic import BaseModel, computed_field, model_validator
 from typing import Literal, ClassVar
 
 class HecvatQuestion(BaseModel):
+    """A single question row in a given sheet/section of the hecvat."""
     id: str
     text: str
     answer: Literal["Yes", "No", "N/A"] | None
     additional_info: str | None
 
 class HecvatSection(BaseModel):
+    """A list of all of the questions for each section in a given sheet of the hecvat."""
     section_map: ClassVar[dict] = {
         "GNRL":"General Information",
         "COMP":"Company Information",
@@ -56,6 +60,7 @@ class HecvatSection(BaseModel):
     questions: list[HecvatQuestion]
     
 class HecvatSheet(BaseModel):
+    """A list of all of the sections on a given hecvat sheet and their names."""
     name: str
     sections: list[HecvatSection]
 
@@ -68,6 +73,7 @@ class HecvatSheet(BaseModel):
         return no_answers
 
 class HecvatFullDocument(BaseModel):
+    """The full hecvat document including relavent metadata."""
     vendor_name: str
     solution_name: str
     date: datetime.date

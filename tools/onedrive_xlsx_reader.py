@@ -5,7 +5,7 @@ import openpyxl, io
 from .base import Tool
 from graph.client import GraphClient
 from extractors.hecvat_extractor import convert_questions_from_rows, convert_sections_from_questions, get_full_document
-from data_models.hecvat_model import HecvatSheet, HecvatFullDocument
+from data_models.hecvat_model import HecvatSheet
 
 class OnedriveXlsxReader(Tool):
     def __init__(self, graph_client : GraphClient) -> None:
