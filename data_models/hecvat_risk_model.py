@@ -21,7 +21,7 @@ class HecvatRiskSummary(BaseModel):
             for question_id in question_ids:
                 if question_id in seen:
                     raise ValueError(
-                        f"{question_id} appears in both '{seen[id]}' and '{category_name}'."
+                        f"{question_id} appears in both '{seen[question_id]}' and '{category_name}'."
                         "Each ID may only belong in one category."
                     )
                 seen[question_id] = category_name
