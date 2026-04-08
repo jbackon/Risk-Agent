@@ -11,7 +11,7 @@ def is_row_question(row: tuple) -> bool:
     pattern = re.compile(r'^[A-Z]+-\d+$')
     if row[0] is None or type(row[0]) is int:
         return False
-    elif row[0][:4] == "GNRL" or row[0][:4] == "REQU":
+    elif row[0][:4] == "GNRL":
         return False 
     else:
         return bool(row[0] and pattern.match(str(row[0])))
@@ -69,6 +69,6 @@ def get_full_document(sheet, sheets: list[HecvatSheet]) -> HecvatFullDocument:
         vendor_name=vendor_name, 
         solution_name=solution_name,
         date=date,
-        version=version, 
+        version=version,
         sheets=sheets)
     return document

@@ -64,13 +64,13 @@ class HecvatSheet(BaseModel):
     name: str
     sections: list[HecvatSection]
 
-    def get_no_response(self) -> list[HecvatQuestion]:
-        no_answers = []
+    def question_ids_by_answer(self, answer: Literal["Yes", "No", "N/A"] | None) -> list:
+        ids = []
         for section in self.sections:
             for question in section.questions:
-                if question.answer == "No":
-                    no_answers.append(question)
-        return no_answers
+                if question.answer == answer:
+                    ids.append(question.id)
+        return ids
 
 class HecvatFullDocument(BaseModel):
     """The full hecvat document including relavent metadata."""
