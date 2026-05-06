@@ -3,6 +3,7 @@ Abstract base class for all broker tools.
 """
 
 from abc import ABC, abstractmethod
+from data_models.hecvat_model import HecvatFullDocument
 
 
 class Tool(ABC):
@@ -56,7 +57,7 @@ class Tool(ABC):
         pass
 
     @abstractmethod
-    async def execute(self, arguments: dict) -> dict:
+    async def execute(self, arguments: dict) -> HecvatFullDocument | None:
         """
         Performs the tool's work and returns a structured result.
 

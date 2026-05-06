@@ -5,7 +5,7 @@ import openpyxl, io
 from .base import Tool
 from graph.client import GraphClient
 from extractors.hecvat_extractor import convert_questions_from_rows, convert_sections_from_questions, get_full_document
-from data_models.hecvat_model import HecvatSheet
+from data_models.hecvat_model import HecvatSheet, HecvatFullDocument
 
 class OnedriveXlsxReader(Tool):
     def __init__(self, graph_client : GraphClient) -> None:
@@ -35,7 +35,7 @@ class OnedriveXlsxReader(Tool):
             "required": ["file_name"]
         }
     
-    async def execute(self, arguments: dict) -> dict:
+    async def execute(self, arguments: dict) -> HecvatFullDocument:
         """The main function that performs the work of the tool and returns a file_name and content."""
         file_name = arguments["file_name"]
         upn = arguments["upn"]
@@ -61,4 +61,4 @@ class OnedriveXlsxReader(Tool):
         
         full_document = get_full_document(sheet=workbook["START HERE"], sheets=sheets)
         
-        return full_document.model_dump(mode="json")
+        return full_document

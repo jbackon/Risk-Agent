@@ -1,20 +1,16 @@
 from pydantic import BaseModel, model_validator
 
 class HecvatRiskSummary(BaseModel):
-    no_answers: list[str]
-    unanswered: list[str]
-    should_be_yes: list[str]
-    no_is_good: list[str]
-    no_is_ok: list[str]
-    none_is_ok: list[str]
+    should_be_yes: dict
+    should_be_no: dict
+    no_is_ok: dict
 
     @model_validator(mode="after")
     def duplicate_category_check(self):
         all_categories = {
             "should_be_yes": self.should_be_yes,
-            "no_is_good": self.no_is_good,
             "no_is_ok": self.no_is_ok,
-            "none_is_ok": self.none_is_ok
+            "should_be_no": self.should_be_no
         }
         seen = {}
         for category_name, question_ids in all_categories.items():

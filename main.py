@@ -3,6 +3,8 @@ from broker import Broker
 from tools.onedrive_pdf_reader import OnedrivePdfReader
 from tools.onedrive_xlsx_reader import OnedriveXlsxReader
 from tools.onedrive_docx_reader import OnedriveDocxReader
+from transformers import hecvat_risk_summary
+from data_models.hecvat_risk_model import HecvatRiskSummary
 from graph.client import GraphAuth, GraphClient
 from dotenv import load_dotenv
 
@@ -14,7 +16,7 @@ def get_file_path() -> list:
     inputs = [args.file_name, args.upn]
     return inputs
 
-async def main(inputs: list) -> dict:
+async def main(inputs: list) -> HecvatRiskSummary:
     BASE_URL = os.getenv("BASE_URL")
     if BASE_URL is None:
         raise RuntimeError("The BASE_URL environment variable has not been set.")
@@ -35,11 +37,14 @@ async def main(inputs: list) -> dict:
         "upn": inputs[1]
     }
     file_content = await broker.dispatch(name=tool.name, arguments=arguments)
-    return file_content
+
+    relevant_section_prefixes = hecvat_risk_summary.get_relevant_section_prefixes(file_content)
+    risk_summary = hecvat_risk_summary.build_risk_summary(file_content, relevant_section_prefixes)
+
+    return risk_summary
 
 if __name__ == "__main__":
     load_dotenv()
-    file_content = asyncio.run(main(inputs=get_file_path()))
-    print(file_content)
-
+    risk_summary = asyncio.run(main(inputs=get_file_path()))
+    print(risk_summary)
 

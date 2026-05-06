@@ -1,5 +1,6 @@
 import logging
 from tools.base import Tool
+from data_models.hecvat_model import HecvatFullDocument
 
 class Broker:
     """A class to perform various tool calls depending on agent use case."""
@@ -13,7 +14,7 @@ class Broker:
         else:
             logging.info(f"Tool {name} already exists in the registry")
 
-    async def dispatch(self, name: str, arguments: dict) -> dict:
+    async def dispatch(self, name: str, arguments: dict) -> HecvatFullDocument:
         """Runs the 'named' tool and returns its output."""
         if name not in self.registry:
             raise KeyError("The requested tool does not exist in the registry.")
