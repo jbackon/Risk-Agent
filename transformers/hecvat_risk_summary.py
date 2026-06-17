@@ -2,6 +2,23 @@
 from data_models.hecvat_model import HecvatFullDocument
 from data_models.hecvat_risk_model import HecvatRiskSummary
 
+CLOUD_PROVIDERS = {"AWS", "Azure", "GCP"}
+
+DCTR_CLOUD_EXCLUSIONS = {
+    "DCTR-02", "DCTR-03", "DCTR-04", "DCTR-05", "DCTR-06", "DCTR-07",
+    "DCTR-08", "DCTR-09", "DCTR-10", "DCTR-11", "DCTR-12", "DCTR-13",
+}
+
+AI_EXCLUSIONS = {
+    "AIQU-01", "AIQU-02",
+    "AIGN-01", "AIGN-02", "AIGN-03", "AIGN-04", "AIGN-05",
+    "AIPL-01", "AIPL-02", "AIPL-03", "AIPL-04", "AIPL-05",
+    "AISC-01", "AISC-02", "AISC-03", "AISC-04", "AISC-05",
+    "AIML-01", "AIML-02", "AIML-03", "AIML-04", "AIML-05", "AIML-06", "AIML-07", "AIML-08",
+    "AILM-01", "AILM-02", "AILM-03", "AILM-04", "AILM-05", "AILM-06",
+    "DPAI-01", "DPAI-02", "DPAI-03", "DPAI-04", "DPAI-05", "DPAI-06", "DPAI-07", "DPAI-08"
+}
+
 SHOULD_BE_YES = {"COMP-01", "COMP-03", "COMP-04", "DOCU-04", "DOCU-05", "DOCU-06", "DOCU-07", "THRD-01", "THRD-02", 
                  "THRD-03", "THRD-04", "THRD-05", "CHNG-01", "CHNG-03", "CHNG-04", "CHNG-05", "CHNG-06", "CHNG-07", 
                  "CHNG-08", "CHNG-10", "CHNG-11", "CHNG-13", "CHNG-14", "CHNG-15", "CHNG-16", "PPPR-01", "PPPR-02", 
@@ -44,7 +61,7 @@ REQU_SECTION_MAP = {
         "REQU-03": {"CONS"},
         "REQU-05": {"HIPA"},
         "REQU-06": {"PCID"},
-        "REQU-07": {"OPEM", "DCTR"}
+        "REQU-07": {"OPEM"}
     }
 
 def get_relevant_section_prefixes(document: HecvatFullDocument) -> set[str]:
@@ -88,26 +105,39 @@ def none_answers(document: HecvatFullDocument, relevant_prefixes: set[str]) -> d
             ).items()
     }
 
+def _get_excluded_ids(document: HecvatFullDocument) -> set[str]:
+    excluded = set()
+    for sheet in document.sheets:
+        q = sheet.get_question("DCTR-01")
+        if q is not None and q.answer in CLOUD_PROVIDERS:
+            excluded |= DCTR_CLOUD_EXCLUSIONS
+        requ04 = sheet.get_question("REQU-04")
+        if requ04 is not None and requ04.answer == "No":
+            excluded |= AI_EXCLUSIONS
+    return excluded
+
 def build_risk_summary(document: HecvatFullDocument, relevant_prefixes: set[str]) -> HecvatRiskSummary:
+    excluded_ids = _get_excluded_ids(document)
+
     should_be_yes_but_no = {
         key: value
         for answers in (no_answers(document, relevant_prefixes), none_answers(document, relevant_prefixes))
         for key, value in answers.items()
-        if key in set(SHOULD_BE_YES)
+        if key in set(SHOULD_BE_YES) and key not in excluded_ids
     }
-    
+
     should_be_no_but_yes = {
         key: value
         for key, value in yes_answers(document, relevant_prefixes).items()
-        if key in NO_IS_GOOD
+        if key in NO_IS_GOOD and key not in excluded_ids
     }
 
     no_needs_review = {
         key: value
         for key, value in no_answers(document, relevant_prefixes).items()
-        if key in set(NO_IS_OK)
+        if key in set(NO_IS_OK) and key not in excluded_ids
     }
-    
+
     return HecvatRiskSummary(
         should_be_yes=should_be_yes_but_no,
         should_be_no=should_be_no_but_yes,

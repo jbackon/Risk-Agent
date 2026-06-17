@@ -64,8 +64,7 @@ class GraphClient:
                     return value.get("id")
             
             raise RuntimeError(f"The file name provided was not found in {upn}'s Onedrive." 
-                               f"Status code: {r.status_code}"
-                               )
+                               f"Status code: {r.status_code}")
 
     async def get(self, path: str) -> bytes:
         """Performs an HTTP GET request to an API endpoint defined by 'path'."""

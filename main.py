@@ -6,6 +6,9 @@ from tools.onedrive_docx_reader import OnedriveDocxReader
 from transformers import hecvat_risk_summary
 from data_models.hecvat_risk_model import HecvatRiskSummary
 from graph.client import GraphAuth, GraphClient
+from prompt import build_prompt
+from llm.client import call_llm
+from response_contract import parse_response, validate_response
 from dotenv import load_dotenv
 
 def get_file_path() -> list:
@@ -16,7 +19,7 @@ def get_file_path() -> list:
     inputs = [args.file_name, args.upn]
     return inputs
 
-async def main(inputs: list) -> HecvatRiskSummary:
+async def main(inputs: list) -> dict:
     BASE_URL = os.getenv("BASE_URL")
     if BASE_URL is None:
         raise RuntimeError("The BASE_URL environment variable has not been set.")
@@ -41,7 +44,14 @@ async def main(inputs: list) -> HecvatRiskSummary:
     relevant_section_prefixes = hecvat_risk_summary.get_relevant_section_prefixes(file_content)
     risk_summary = hecvat_risk_summary.build_risk_summary(file_content, relevant_section_prefixes)
 
-    return risk_summary
+    prompt = build_prompt(risk_summary)
+    raw_response = await asyncio.to_thread(call_llm, prompt)
+    full_response = parse_response(raw_response)
+
+    if not validate_response(full_response):
+        raise RuntimeError("LLM returned an empty summary.")
+
+    return full_response.model_dump(mode="json")
 
 if __name__ == "__main__":
     load_dotenv()

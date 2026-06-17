@@ -2,13 +2,13 @@
 
 import datetime
 from pydantic import BaseModel, computed_field, model_validator
-from typing import Literal, ClassVar
+from typing import ClassVar
 
 class HecvatQuestion(BaseModel):
     """A single question row in a given sheet/section of the hecvat."""
     id: str
     text: str
-    answer: Literal["Yes", "No", "N/A"] | None
+    answer: str | None
     additional_info: str | None
 
 class HecvatSection(BaseModel):
@@ -71,7 +71,7 @@ class HecvatSheet(BaseModel):
                     return question
         return None
 
-    def question_ids_by_answer(self, answer: Literal["Yes", "No", "N/A"] | None, relevant_prefixes: set[str] | None) -> dict:
+    def question_ids_by_answer(self, answer: str | None, relevant_prefixes: set[str] | None) -> dict:
         sorted_questions = {}
         for section in self.sections:
             if relevant_prefixes is None or section.questions[0].id[:4] in relevant_prefixes:
